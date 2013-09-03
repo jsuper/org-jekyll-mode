@@ -1,0 +1,82 @@
+					; Org-jekyll project configure directory
+
+(defgroup org-jekyll nil
+  "Write jekyll blog with org-mode")
+
+(defcustom org-jekyll/org-mode-project-root nil
+  "Define the org-mode project base path"
+  :type 'string
+  :group 'org-jekyll)
+
+(defcustom org-jekyll/jekyll-project-root nil
+  "Define the publishing directory for org-mode project"
+  :type 'string
+  :group 'org-jekyll)
+
+(defcustom org-jekyll/export-with-toc nil
+  "Define whether export the table of contents or not"
+  :type 'boolean
+  :group 'org-jekyll
+  :options '(nil t))
+
+(defcustom org-jekyll/headlines-level 2
+  "define the headline level for export toc"
+  :type 'integer
+  :group 'org-jekyll)
+
+(defcustom org-jekyll/org-mode-static-extensions
+  '("css" "js" "png" "jpg" "gif" "pdf" "mp3" "swf" "zip" "gz" "txt" "el")
+  "Define the file's extension which need to handle as static files"
+  :type 'list
+  :group 'org-jekyll)
+
+(defun org-jekyll/create-project-alist ()
+  "Create the project alist for exporting org-mode file to jekyll post"
+  (let ((org-mode-project-root (if org-jekyll/org-mode-project-root
+				   org-jekyll/org-mode-project-root
+				 (error "Project base directory should not be empty")))
+	(jekyll-project-root (if org-jekyll/jekyll-project-root
+				 org-jekyll/jekyll-project-root
+			       (error "Project publishing directory should not be empty"))))
+    (setq org-jekyll-base (append '("org-jekyll-base"			    
+				    :body-only t
+				    :base-extension "org"
+				    :html-extension "html"
+				    :recursive t
+				    :publishing-function org-html-publish-to-html
+				    :auto-sitemap nil
+				    :section-number nil
+				    :auto-preamble nil
+				    :auto-postamble nil)
+				  (list :base-directory org-mode-project-root
+					:publishing-directory (expand-file-name "_post" jekyll-project-root)
+					:with-toc org-jekyll/export-with-toc)))
+    (setq org-jekyll-static (append '("org-jekyll-static"
+				      :recursive t
+				      :publishing-function org-publish-attachment
+				      )
+				    (list 
+				     :publishing-directory (expand-file-name jekyll-project-root "/assets")
+				     :base-directory org-mode-project-root
+				     :base-extension (let ((result nil))
+						       (dolist (var org-jekyll/org-mode-static-extensions)
+							 (if result
+							     (setq result (concat result "\\|" (format "%s" var)))
+							   (setq result (format "%s" var))
+							   ))
+						       result))
+				    ))
+    (list  
+     org-jekyll-base
+     org-jekyll-static
+     '("org-jekyll"
+       :components ("org-jekyll-base" "org-jekyll-static")
+       :author "org-jekyll"
+       ))
+    ))
+
+
+(provide 'org-jekyll-project)
+
+
+
