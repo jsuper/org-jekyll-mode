@@ -58,32 +58,39 @@
 				    :section-number nil
 				    :auto-preamble nil
 				    :auto-postamble nil)
-				  (list :base-directory (expand-file-name org-mode-project-root)
-					:publishing-directory (expand-file-name "_post" jekyll-project-root)
+				  (list :base-directory (expand-file-name 
+							 org-mode-project-root)
+					:publishing-directory (expand-file-name 
+							       "_post" 
+							       jekyll-project-root)
 					:with-toc org-jekyll/export-with-toc)))
     (setq org-jekyll-static (append '("org-jekyll-static"
 				      :recursive t
 				      :publishing-function org-publish-attachment
 				      )
 				    (list 
-				     :publishing-directory (expand-file-name jekyll-project-root "/assets")
-				     :base-directory (expand-file-name org-mode-project-root)
+				     :publishing-directory (expand-file-name 
+							    "assets" 
+							    jekyll-project-root)
+				     :base-directory (expand-file-name
+						      org-mode-project-root)
 				     :base-extension (let ((result nil))
-						       (dolist (var org-jekyll/org-mode-static-extensions)
+						       (dolist 
+							   (var org-jekyll/org-mode-static-extensions)
 							 (if result
-							     (setq result (concat result "\\|" (format "%s" var)))
+							     (setq result (concat result 
+										  "\\|" 
+										  (format "%s" var)))
 							   (setq result (format "%s" var))
 							   ))
-						       result))
-				    ))
+						       result))))
     (list  
      org-jekyll-base
      org-jekyll-static
      '("org-jekyll"
        :components ("org-jekyll-base" "org-jekyll-static")
        :author "org-jekyll"
-       ))
-    ))
+       ))))
 
 (defun trim-string (string)
   "Remove white spaces in beginning and ending of STRING.
@@ -114,10 +121,8 @@ eg:
 		(value (trim-string (buffer-substring-no-properties (point) (line-end-position)))))
 	    (when (search-backward prefix nil t)
 	      (let ((tele (downcase (buffer-substring (+ (length prefix) (point)) 
-						      (- last-point 1)))))
-		
+						      (- last-point 1)))))		
 		(when (member tele org-jekyll/yaml-front-matter-keywords)
-		  (message tele)
 		  (setq rlist (plist-put rlist (intern (format ":%s" tele)) value)))))))))
     rlist))
 
