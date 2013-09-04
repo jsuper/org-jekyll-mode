@@ -39,3 +39,4 @@
       (kill-buffer))))
 
 
+(provide 'org-jekyll-publish)

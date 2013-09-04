@@ -53,7 +53,7 @@
 				    :base-extension "org"
 				    :html-extension "html"
 				    :recursive t
-				    :publishing-function org-html-publish-to-html
+				    :publishing-function org-jekyll/publish-org-to-html
 				    :auto-sitemap nil
 				    :section-number nil
 				    :auto-preamble nil
@@ -126,10 +126,36 @@ eg:
 		  (setq rlist (plist-put rlist (intern (format ":%s" tele)) value)))))))))
     rlist))
 
+(defun org-jekyll/new-post ()
+  "Create an org-mode file in org-jekyll/org-mode-project-root.
+If you want to create the post in a new sub directory, you can 
+use / to seprate the subdirectory and file name. e.g: I want to
+create a file named hello-world and put it in subdirectory '2013',
+then I will input like below:
+2013/hello-world
 
+If you don't setting the org-jekyll/org-mode-project-root, then
+it will failed.
+"
+  (interactive)
+  (unless org-jekyll/org-mode-project-root
+    (error "You never define the org-jekyll/org-mode-project-root"))
+  (let ((paths (split-string (read-string "File Name:")
+			     "/")))
+    (message (concat-list (butlast paths)))
+    (let ((pdirs (concat-list (butlast paths) "/"))
+	   (file-name (format "%s-%s.org" (format-time-string "%Y-%m-%d") 
+			      (car (last paths)))))
+      (message "pdirs" pdirs)
+      (when pdirs
+	(unless (file-exists-p (expand-file-name pdirs
+					       org-jekyll/org-mode-project-root))
+	  (make-directory (expand-file-name pdirs org-jekyll/org-mode-project-root) t)))
+      (let ((file-name-p (if pdirs
+			     (concat pdirs "/" file-name)
+			   file-name
+			   )))
+	(message "Create post [%s]" file-name-p)
+	(find-file (expand-file-name file-name
+				     org-jekyll/org-mode-project-root))))))
 (provide 'org-jekyll-project)
-
-
-
-
-
