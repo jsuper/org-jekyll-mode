@@ -1,5 +1,8 @@
 ; Org-jekyll project configure directory
 
+(require 'org)
+(require 'ox)
+
 (defgroup org-jekyll nil
   "Write jekyll blog with org-mode")
 
@@ -30,6 +33,11 @@
   :type 'list
   :group 'org-jekyll)
 
+(defcustom org-jekyll/org-mode-static-files-folder-name "."
+  "Define the folder name in org-mode-project root which used to store static files for org-mode"
+  :type 'string
+  :group 'org-jekyll)
+
 (defcustom org-jekyll/default-post-layout "post"
   "Define the default layout for jekyll post"
   :type 'string 
@@ -55,13 +63,12 @@
 				    :recursive t
 				    :publishing-function org-jekyll/publish-org-to-html
 				    :auto-sitemap nil
-				    :section-number nil
 				    :auto-preamble nil
 				    :auto-postamble nil)
 				  (list :base-directory (expand-file-name 
 							 org-mode-project-root)
 					:publishing-directory (expand-file-name 
-							       "_post" 
+							       "_posts" 
 							       jekyll-project-root)
 					:with-toc org-jekyll/export-with-toc)))
     (setq org-jekyll-static (append '("org-jekyll-static"
@@ -72,7 +79,7 @@
 				     :publishing-directory (expand-file-name 
 							    "assets" 
 							    jekyll-project-root)
-				     :base-directory (expand-file-name
+				     :base-directory (expand-file-name org-jekyll/org-mode-static-files-folder-name
 						      org-mode-project-root)
 				     :base-extension (let ((result nil))
 						       (dolist 
@@ -140,22 +147,53 @@ it will failed.
   (interactive)
   (unless org-jekyll/org-mode-project-root
     (error "You never define the org-jekyll/org-mode-project-root"))
-  (let ((paths (split-string (read-string "File Name:")
+  (let ((paths (split-string (read-string "Post Title:")
 			     "/")))
-    (message (concat-list (butlast paths)))
-    (let ((pdirs (concat-list (butlast paths) "/"))
-	   (file-name (format "%s-%s.org" (format-time-string "%Y-%m-%d") 
-			      (car (last paths)))))
-      (message "pdirs" pdirs)
-      (when pdirs
-	(unless (file-exists-p (expand-file-name pdirs
-					       org-jekyll/org-mode-project-root))
-	  (make-directory (expand-file-name pdirs org-jekyll/org-mode-project-root) t)))
-      (let ((file-name-p (if pdirs
-			     (concat pdirs "/" file-name)
-			   file-name
-			   )))
-	(message "Create post [%s]" file-name-p)
-	(find-file (expand-file-name file-name
-				     org-jekyll/org-mode-project-root))))))
+    (let ((pdirs (butlast paths))
+	  (file-name (format "%s-%s.org" 
+			     (format-time-string "%Y-%m-%d") 
+			     (car (last paths)))))
+      (let ((pdirpath (if (and 
+			   pdirs 
+			   (>= (length pdirs) 1))
+			  (concat-list pdirs "/")
+			nil)))
+	(let ((file-name-path (if pdirpath 
+				  (concat pdirpath "/" file-name)
+				file-name))
+	      (pdir-abs-path (if pdirpath
+				 (expand-file-name pdirpath 
+						   org-jekyll/org-mode-project-root)
+			       nil)))
+	  (when pdir-abs-path
+	    (unless (file-exists-p pdir-abs-path)
+	      (make-directory pdir-abs-path t)))
+	  (message "Create Post [%s]" file-name-path)
+	  (find-file (expand-file-name file-name-path
+				       org-jekyll/org-mode-project-root))
+	  (message "Post [%s] has been created" file-name-path)
+	  )))))
+
+;(defun org-jekyll/handle-image-link-before-processing (back-end)
+;  (case back-end
+;    ('html 
+;     (while (search-forward-regexp "\\[\\[.*\\.\\(?:png\\|gif\\)\\]\\]" nil t)
+;      (let* ((matched-str (match-string-no-properties 0))	  
+;	   (file-paths (substring matched-str 2 (- (length matched-str) 2)))
+;	   (relaced-str (format "[[oj-img:%s]]" (substring 
+;					  (expand-file-name (concat org-jekyll/org-mode-project-root "/" file-paths))
+;					  (length (expand-file-name org-jekyll/org-mode-project-root))
+;					  ))))
+;	(replace-match relaced-str nil t)
+;	)))))
+;
+;(defun org-jekyll/custom-org-link-type-exporter (path desc format)
+;;  (print (org-export--get-subtree-options))
+;  (cond 
+;   ((eq format 'html)
+;    (format "<img src=\"%s\" alt=\"%s\"/>" path desc))))
+;
+;(add-hook 'org-export-before-parsing-hook 'org-jekyll/handle-image-link-before-processing)
+;(org-add-link-type "oj-img" nil 'org-jekyll/custom-org-link-type-exporter)
+
 (provide 'org-jekyll-project)

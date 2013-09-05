@@ -34,9 +34,12 @@
 	(when (member :tag yaml-plist)
 	  (org-jekyll/insert-yaml-front-matter "tag"
 					       (split-string (getf yaml-plist :tag) ";")))
-	(insert-string "---\n"))
+	(insert-string "---\n")
+
+	)
       (save-buffer)
       (kill-buffer))))
 
+(defun org-jekyll/correct-static-files-link ())
 
 (provide 'org-jekyll-publish)

@@ -6,7 +6,10 @@
 (require 'org-jekyll-project)
 
 (custom-set-variables
- '(org-jekyll/jekyll-project-root "/home/tony/org-jekyll-test/jekyll-root")
- '(org-jekyll/org-mode-project-root "~/org-jekyll-test/org-mode-root"))
+ '(org-jekyll/jekyll-project-root "~/org-jekyll-test/jekyll-root")
+ '(org-jekyll/org-mode-project-root "~/org-jekyll-test/org-mode-root")
+ '(org-jekyll/org-mode-static-files-folder-name "assets"))
 
 (setq org-publish-project-alist (org-jekyll/create-publish-project-alist))
+
+
