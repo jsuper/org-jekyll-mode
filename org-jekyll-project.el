@@ -1,8 +1,5 @@
 ; Org-jekyll project configure directory
 
-(require 'org)
-(require 'ox)
-
 (defgroup org-jekyll nil
   "Write jekyll blog with org-mode")
 
@@ -43,10 +40,25 @@
   :type 'string 
   :group 'org-jekyll)
 
-(defcustom org-jekyll/yaml-front-matter-keywords '("categories" "tag" "layout")
-  "Define the yamal keywords for jekyll post. You should define it in the begining of Org-mode files and with prefix #+YAML/ plus uppercase of current"
-  :type 'list
-  :group 'org-jekyll)
+(defvar org-jekyll/html-link-home "/"
+  "define the html link root path:
+e.g: If your jekyll project root is $HOST/jekyll,
+then set this variable to /jekyll
+"
+  )
+
+(defvar org-jekyll/yaml-list-value-sperator ";"
+  "Yaml values seprator")
+(defvar org-jekyll/yaml-front-matter-keywords 
+  '(layout "string"
+	   title "string"
+	   permalink "string"
+	   published "string"
+	   category "string"
+	   categories "list"
+	   tags "list")
+  "Define the jekyll yaml front matter and its value type, if the value type is list, then it's value will be use org-jekyll/yaml-list-value-sperator
+to seprate each one")
 
 (defun org-jekyll/create-publish-project-alist ()
   "Create the project alist for exporting org-mode file to jekyll post"
@@ -60,6 +72,7 @@
 				    :body-only t
 				    :base-extension "org"
 				    :html-extension "html"
+				    :html-link-use-abs-url t
 				    :recursive t
 				    :publishing-function org-jekyll/publish-org-to-html
 				    :auto-sitemap nil
@@ -67,6 +80,7 @@
 				    :auto-postamble nil)
 				  (list :base-directory (expand-file-name 
 							 org-mode-project-root)
+					:html-link-home org-jekyll/html-link-home
 					:publishing-directory (expand-file-name 
 							       "_posts" 
 							       jekyll-project-root)
@@ -109,29 +123,31 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 each yaml front matter in org-mode should be started with #+YAML/
 eg:
 #+YAML/layout: page
-#+YAML/tag: tag1;tag2;tag3 (each tag should be seperate by ;)
-#+YAML/categories: cat1;cat2;cat3 (each category should be seperate by ;)
+#+YAML/tag: tag1;tag2;tag3 (each tag should be seperate by org-jekyll/yaml-list-value-sperator)
+#+YAML/categories: cat1;cat2;cat3 (each category should be seperate by org-jekyll/yaml-list-value-sperator)
 "
   (let ((visitingp (find-buffer-visiting infile))
-	(prefix "#+YAML/")
-	(regexps (format "^#\\+YAML/%s:" 
-			 (regexp-opt (mapcar 'upcase 
-					     org-jekyll/yaml-front-matter-keywords)))))
-    (setq rlist '())
+	(regexp "^#\\+YAML/\\(.*\\):\\(.*\\)")
+	(result)
+	)
     (when (not visitingp)
       (setq visitingp (find-file-noselect infile)))
     (with-current-buffer visitingp
       (goto-char (point-min))
-      (while (search-forward-regexp regexps nil t)
-	(save-excursion
-	  (let ((last-point (point))
-		(value (trim-string (buffer-substring-no-properties (point) (line-end-position)))))
-	    (when (search-backward prefix nil t)
-	      (let ((tele (downcase (buffer-substring (+ (length prefix) (point)) 
-						      (- last-point 1)))))		
-		(when (member tele org-jekyll/yaml-front-matter-keywords)
-		  (setq rlist (plist-put rlist (intern (format ":%s" tele)) value)))))))))
-    rlist))
+      (while (search-forward-regexp regexp nil t)
+	(let* ((yaml-name (match-string-no-properties 1))
+	       (yaml-value (match-string-no-properties 2))
+	       (definedp (plist-get org-jekyll/yaml-front-matter-keywords (intern (downcase yaml-name)))))
+	  (when (and yaml-name yaml-value definedp)
+	    (add-to-list 'result (list (downcase yaml-name)
+				       (cond ((string= definedp "string")
+					      (trim-string yaml-value))
+					     ((string= definedp "list")
+					      (split-string (trim-string yaml-value) org-jekyll/yaml-list-value-sperator)
+					      ))
+				       ))
+	    )))
+      ) result))
 
 (defun org-jekyll/new-post ()
   "Create an org-mode file in org-jekyll/org-mode-project-root.
