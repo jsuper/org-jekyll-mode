@@ -48,11 +48,14 @@
       (save-buffer)
       (kill-buffer))))
 
-(dolist (pub-proj (org-jekyll/create-publish-project-alist))
-  (add-to-list 'org-publish-project-alist pub-proj))
 
 (defun org-jekyll/publish-project ()
   (interactive)
   (org-publish "org-jekyll"))
+
+(defun org-jekyll/publish-setting-up ()
+  (dolist (pub-proj (org-jekyll/create-publish-project-alist))
+    (add-to-list 'org-publish-project-alist pub-proj))
+)
 
 (provide 'org-jekyll-publish)
