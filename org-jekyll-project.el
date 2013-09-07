@@ -31,7 +31,8 @@
   :group 'org-jekyll)
 
 (defcustom org-jekyll/org-mode-static-files-folder-name "."
-  "Define the folder name in org-mode-project root which used to store static files for org-mode"
+  "Define the folder name in org-mode-project root which used to 
+store static files for org-mode"
   :type 'string
   :group 'org-jekyll)
 
@@ -57,54 +58,84 @@ then set this variable to /jekyll
 	   category "string"
 	   categories "list"
 	   tags "list")
-  "Define the jekyll yaml front matter and its value type, if the value type is list, then it's value will be use org-jekyll/yaml-list-value-sperator
+  "Define the jekyll yaml front matter and its value type, 
+if the value type is list, then it's value will be use org-jekyll/yaml-list-value-sperator
 to seprate each one")
+
+;;;###autoload
+(defun trim-string (string)
+  "Remove white spaces in beginning and ending of STRING.
+White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
+  (replace-regexp-in-string "\\`[ \t\n]*" "" 
+			    (replace-regexp-in-string "[ \t\n]*\\'" 
+						      "" 
+						      string)))
+
+;;;###autoload
+(defun concat-list (list &optional concat-char)
+  "join each element in list with concat-char if it offered"
+  (let ((cchar (if concat-char 
+		   concat-char
+		 "")))
+    (setq result nil)
+    (dolist (ele list)
+      (if result
+	  (setq result (concat result concat-char ele))
+	(setq result ele)))
+    result)
+  )
 
 (defun org-jekyll/create-publish-project-alist ()
   "Create the project alist for exporting org-mode file to jekyll post"
-  (let ((org-mode-project-root (if org-jekyll/org-mode-project-root
-				   org-jekyll/org-mode-project-root
-				 (error "Project base directory should not be empty")))
-	(jekyll-project-root (if org-jekyll/jekyll-project-root
-				 org-jekyll/jekyll-project-root
-			       (error "Project publishing directory should not be empty"))))
-    (setq org-jekyll-base (append '("org-jekyll-base"			    
-				    :body-only t
-				    :base-extension "org"
-				    :html-extension "html"
-				    :html-link-use-abs-url t
-				    :recursive t
-				    :publishing-function org-jekyll/publish-org-to-html
-				    :auto-sitemap nil
-				    :auto-preamble nil
-				    :auto-postamble nil)
-				  (list :base-directory (expand-file-name 
-							 org-mode-project-root)
-					:html-link-home org-jekyll/html-link-home
-					:publishing-directory (expand-file-name 
-							       "_posts" 
-							       jekyll-project-root)
-					:with-toc org-jekyll/export-with-toc)))
-    (setq org-jekyll-static (append '("org-jekyll-static"
-				      :recursive t
-				      :publishing-function org-publish-attachment
-				      )
-				    (list 
-				     :publishing-directory (expand-file-name 
-							    "assets" 
-							    jekyll-project-root)
-				     :base-directory (expand-file-name org-jekyll/org-mode-static-files-folder-name
-						      org-mode-project-root)
-				     :base-extension (let ((result nil))
-						       (dolist 
-							   (var org-jekyll/org-mode-static-extensions)
-							 (if result
-							     (setq result (concat result 
-										  "\\|" 
-										  (format "%s" var)))
-							   (setq result (format "%s" var))
-							   ))
-						       result))))
+  (let ((org-mode-project-root 
+	 (if org-jekyll/org-mode-project-root
+	     org-jekyll/org-mode-project-root
+	   (error "Project base directory should not be empty")))
+	(jekyll-project-root 
+	 (if org-jekyll/jekyll-project-root
+	     org-jekyll/jekyll-project-root
+	   (error "Project publishing directory should not be empty"))))
+    (setq org-jekyll-base (append 
+			   '("org-jekyll-base"			    
+			     :body-only t
+			     :base-extension "org"
+			     :html-extension "html"
+			     :html-link-use-abs-url t
+			     :recursive t
+			     :publishing-function org-jekyll/publish-org-to-html
+			     :auto-sitemap nil
+			     :auto-preamble nil
+			     :auto-postamble nil)
+			   (list 
+			    :base-directory (expand-file-name 
+					     org-mode-project-root)
+			    :html-link-home org-jekyll/html-link-home
+			    :publishing-directory (expand-file-name 
+						   "_posts" 
+						   jekyll-project-root)
+			    :with-toc org-jekyll/export-with-toc)))
+    (setq org-jekyll-static (append 
+			     '("org-jekyll-static"
+			       :recursive t
+			       :publishing-function org-publish-attachment
+			       )
+			     (list 
+			      :publishing-directory (expand-file-name 
+						     "assets" 
+						     jekyll-project-root)
+			      :base-directory (expand-file-name 
+					       org-jekyll/org-mode-static-files-folder-name
+					       org-mode-project-root)
+			      :base-extension (let ((result nil))
+						(dolist 
+						    (var org-jekyll/org-mode-static-extensions)
+						  (if result
+						      (setq result (concat result 
+									   "\\|" 
+									   (format "%s" var)))
+						    (setq result (format "%s" var))
+						    ))
+						result))))
     (list  
      org-jekyll-base
      org-jekyll-static
@@ -112,11 +143,6 @@ to seprate each one")
        :components ("org-jekyll-base" "org-jekyll-static")
        :author "org-jekyll"
        ))))
-
-(defun trim-string (string)
-  "Remove white spaces in beginning and ending of STRING.
-White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
-  (replace-regexp-in-string "\\`[ \t\n]*" "" (replace-regexp-in-string "[ \t\n]*\\'" "" string)))
 
 (defun org-jekyll/get-yaml-front-matter (infile)
   "Getting the pre-defined attribute from org-mode files
@@ -128,8 +154,7 @@ eg:
 "
   (let ((visitingp (find-buffer-visiting infile))
 	(regexp "^#\\+YAML/\\(.*\\):\\(.*\\)")
-	(result)
-	)
+	(result))
     (when (not visitingp)
       (setq visitingp (find-file-noselect infile)))
     (with-current-buffer visitingp
@@ -137,15 +162,19 @@ eg:
       (while (search-forward-regexp regexp nil t)
 	(let* ((yaml-name (match-string-no-properties 1))
 	       (yaml-value (match-string-no-properties 2))
-	       (definedp (plist-get org-jekyll/yaml-front-matter-keywords (intern (downcase yaml-name)))))
+	       (definedp (plist-get 
+			  org-jekyll/yaml-front-matter-keywords 
+			  (intern (downcase yaml-name)))))
 	  (when (and yaml-name yaml-value definedp)
-	    (add-to-list 'result (list (downcase yaml-name)
-				       (cond ((string= definedp "string")
-					      (trim-string yaml-value))
-					     ((string= definedp "list")
-					      (split-string (trim-string yaml-value) org-jekyll/yaml-list-value-sperator)
-					      ))
-				       ))
+	    (add-to-list 'result 
+			 (list (downcase yaml-name)
+			       (cond ((string= definedp "string")
+				      (trim-string yaml-value))
+				     ((string= definedp "list")
+				      (split-string (trim-string yaml-value) 
+						    org-jekyll/yaml-list-value-sperator)
+				      ))
+			       ))
 	    )))
       ) result))
 

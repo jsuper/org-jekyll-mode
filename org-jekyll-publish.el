@@ -42,7 +42,7 @@
 	(unless nolayout 
 	  (goto-char (point-min))
 	  (org-jekyll/insert-yaml-front-matter-string "layout" (or org-jekyll/default-post-layout "post")))
-
+	
 	(goto-char (point-min))
 	(insert "---\n"))
       (save-buffer)

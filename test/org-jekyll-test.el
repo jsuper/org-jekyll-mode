@@ -7,8 +7,6 @@
  '(org-jekyll/org-mode-project-root "~/org-jekyll-test/org-mode-root")
  '(org-jekyll/org-mode-static-files-folder-name "assets"))
 
-(require 'org-jekyll-util)
-(require 'org-jekyll-publish)
 (require 'org-jekyll-project)
-
+(require 'org-jekyll-publish)
 
