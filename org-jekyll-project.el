@@ -2,41 +2,62 @@
 
 (require 'ox-publish)
 
-(defvar org-jekyll/org-mode-project-root nil
+(defgroup org-jekyll nil
+  "Org-mode for jekyll project")
+
+(defcustom org-jekyll/org-mode-project-root nil
   "Define the org-mode project base path, 
-you must specify it before you invoke org-jekyll/publish-setting-up")
+you must specify it before you invoke org-jekyll/publish-setting-up"
+  :type 'string
+  :group 'org-jekyll)
 
-(defvar org-jekyll/jekyll-project-root nil
+(defcustom org-jekyll/jekyll-project-root nil
   "Define the publishing directory for org-mode project,
- you must specify it before you invoke org-jekyll/publish-setting-up")
+ you must specify it before you invoke org-jekyll/publish-setting-up"
+  :type 'string
+  :group 'org-jekyll
+  )
 
-(defvar org-jekyll/export-with-toc nil
+(defcustom org-jekyll/export-with-toc nil
   "Define whether export the Table of Contents or not
-nil or t")
+nil or t"
+  :type 'boolean
+  :group 'org-jekyll
+  :options '(nil t))
 
-(defvar org-jekyll/headlines-level 2
-  "define the headline level for export toc")
+(defcustom org-jekyll/headlines-level 2
+  "Define the headline level for export toc"
+  :group 'org-jekyll
+  :type 'integer)
 
 (defvar org-jekyll/org-mode-static-extensions
   '("css" "js" "png" "jpg" "gif" "pdf" "mp3" "swf" "zip" "gz" "txt" "el")
   "Define the file's extension which need to handle as static files")
 
-(defvar org-jekyll/org-mode-static-files-folder-name "."
+(defcustom  org-jekyll/org-mode-static-files-folder-name "."
   "Define the folder name in org-mode-project root which used to 
-store static files for org-mode")
+store static files for org-mode"
+  :type 'string
+  :group 'org-jekyll)
 
-(defvar org-jekyll/default-post-layout "post"
-  "Define the default layout for jekyll post")
+(defcustom org-jekyll/default-post-layout "post"
+  "Define the default layout for jekyll post"
+  :type 'string
+  :group 'org-jekyll)
 
-(defvar org-jekyll/html-link-home "/"
+(defcustom org-jekyll/html-link-home "/"
   "define the html link root path:
 e.g: If your jekyll project root is $HOST/jekyll,
 then set this variable to /jekyll
 "
+  :type 'string
+  :group 'org-jekyll
   )
 
 (defvar org-jekyll/yaml-list-value-sperator ";"
-  "Yaml values seprator")
+  "Yaml values seprator"
+  :type 'string
+  :group 'org-jekyll)
 
 (defvar org-jekyll/yaml-front-matter-keywords 
   '(layout "string"
@@ -50,7 +71,6 @@ then set this variable to /jekyll
 if the value type is list, then it's value will be use org-jekyll/yaml-list-value-sperator
 to seprate each one")
 
-;;;###autoload
 (defun trim-string (string)
   "Remove white spaces in beginning and ending of STRING.
 White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
@@ -59,7 +79,6 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 						      "" 
 						      string)))
 
-;;;###autoload
 (defun concat-list (list &optional concat-char)
   "join each element in list with concat-char if it offered"
   (let ((cchar (if concat-char 
