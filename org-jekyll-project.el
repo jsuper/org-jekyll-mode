@@ -1,45 +1,32 @@
 ; Org-jekyll project configure directory
 
-(defgroup org-jekyll nil
-  "Write jekyll blog with org-mode")
+(require 'ox-publish)
 
-(defcustom org-jekyll/org-mode-project-root nil
-  "Define the org-mode project base path"
-  :type 'string
-  :group 'org-jekyll)
+(defvar org-jekyll/org-mode-project-root nil
+  "Define the org-mode project base path, 
+you must specify it before you invoke org-jekyll/publish-setting-up")
 
-(defcustom org-jekyll/jekyll-project-root nil
-  "Define the publishing directory for org-mode project"
-  :type 'string
-  :group 'org-jekyll)
+(defvar org-jekyll/jekyll-project-root nil
+  "Define the publishing directory for org-mode project,
+ you must specify it before you invoke org-jekyll/publish-setting-up")
 
-(defcustom org-jekyll/export-with-toc nil
-  "Define whether export the table of contents or not"
-  :type 'boolean
-  :group 'org-jekyll
-  :options '(nil t))
+(defvar org-jekyll/export-with-toc nil
+  "Define whether export the Table of Contents or not
+nil or t")
 
-(defcustom org-jekyll/headlines-level 2
-  "define the headline level for export toc"
-  :type 'integer
-  :group 'org-jekyll)
+(defvar org-jekyll/headlines-level 2
+  "define the headline level for export toc")
 
-(defcustom org-jekyll/org-mode-static-extensions
+(defvar org-jekyll/org-mode-static-extensions
   '("css" "js" "png" "jpg" "gif" "pdf" "mp3" "swf" "zip" "gz" "txt" "el")
-  "Define the file's extension which need to handle as static files"
-  :type 'list
-  :group 'org-jekyll)
+  "Define the file's extension which need to handle as static files")
 
-(defcustom org-jekyll/org-mode-static-files-folder-name "."
+(defvar org-jekyll/org-mode-static-files-folder-name "."
   "Define the folder name in org-mode-project root which used to 
-store static files for org-mode"
-  :type 'string
-  :group 'org-jekyll)
+store static files for org-mode")
 
-(defcustom org-jekyll/default-post-layout "post"
-  "Define the default layout for jekyll post"
-  :type 'string 
-  :group 'org-jekyll)
+(defvar org-jekyll/default-post-layout "post"
+  "Define the default layout for jekyll post")
 
 (defvar org-jekyll/html-link-home "/"
   "define the html link root path:
@@ -50,6 +37,7 @@ then set this variable to /jekyll
 
 (defvar org-jekyll/yaml-list-value-sperator ";"
   "Yaml values seprator")
+
 (defvar org-jekyll/yaml-front-matter-keywords 
   '(layout "string"
 	   title "string"
@@ -240,5 +228,61 @@ it will failed.
 ;
 ;(add-hook 'org-export-before-parsing-hook 'org-jekyll/handle-image-link-before-processing)
 ;(org-add-link-type "oj-img" nil 'org-jekyll/custom-org-link-type-exporter)
+
+(defun org-jekyll/insert-yaml-front-matter-string (section value)
+  (when (and value section)
+    (cond ((stringp value)
+	   (insert (format "%s: %s\n" section value)))
+	  ((listp value)
+	   (insert (format "%s:\n" section))
+	   (dolist (var value)
+	     (insert (format "  - %s\n" var))
+	     )))))
+
+(defun org-jekyll/publish-org-to-html (plist filename pub-dir)
+  "Org-jekyll publish function, will insert yaml front matter to export files,
+   We using the keywords defined in org-mode files as tag for jekyll
+  "
+  (let* ((output-file (org-html-publish-to-html plist filename pub-dir))
+	(file-info (org-export--get-inbuffer-options))
+	(yaml-plist (org-jekyll/get-yaml-front-matter filename))
+	(title (org-element-interpret-data (plist-get file-info :title))))
+    
+    (with-current-buffer (find-file-noselect output-file)
+      (goto-char (point-min))
+      (let* ((notitle nil)
+	     (nolayout nil))
+	(dolist (yaml-v-pair yaml-plist)
+	  (let* ((yaml-name (car yaml-v-pair))
+		(yaml-value (plist-get yaml-v-pair yaml-name)))
+	    (when (string= yaml-name "title")
+	      (setq notitle t))
+	    (when (string= yaml-name "layout")
+	      (setq nolayout t))
+	    (org-jekyll/insert-yaml-front-matter-string yaml-name yaml-value)
+	    )
+	  )
+	(insert "---\n")
+	(unless notitle 
+	  (goto-char (point-min))
+	  (org-jekyll/insert-yaml-front-matter-string "title" title))
+	(unless nolayout 
+	  (goto-char (point-min))
+	  (org-jekyll/insert-yaml-front-matter-string "layout" (or org-jekyll/default-post-layout "post")))
+	
+	(goto-char (point-min))
+	(insert "---\n"))
+      (save-buffer)
+      (kill-buffer))))
+
+
+(defun org-jekyll/publish-project ()
+  (interactive)
+  (org-publish "org-jekyll"))
+
+(defun org-jekyll/publish-setting-up ()
+  (dolist (pub-proj (org-jekyll/create-publish-project-alist))
+    (add-to-list 'org-publish-project-alist pub-proj))
+)
 
 (provide 'org-jekyll-project)
