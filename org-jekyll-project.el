@@ -54,7 +54,7 @@ then set this variable to /jekyll
   :group 'org-jekyll
   )
 
-(defvar org-jekyll/yaml-list-value-sperator ";"
+(defcustom org-jekyll/yaml-list-value-sperator ";"
   "Yaml values seprator"
   :type 'string
   :group 'org-jekyll)
