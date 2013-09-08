@@ -1,7 +1,5 @@
 ; Org-jekyll project configure directory
 
-(require 'ox-publish)
-
 (defgroup org-jekyll nil
   "Org-mode for jekyll project")
 
@@ -30,10 +28,6 @@ nil or t"
   :group 'org-jekyll
   :type 'integer)
 
-(defvar org-jekyll/org-mode-static-extensions
-  '("css" "js" "png" "jpg" "gif" "pdf" "mp3" "swf" "zip" "gz" "txt" "el")
-  "Define the file's extension which need to handle as static files")
-
 (defcustom  org-jekyll/org-mode-static-files-folder-name "."
   "Define the folder name in org-mode-project root which used to 
 store static files for org-mode"
@@ -59,6 +53,10 @@ then set this variable to /jekyll
   :type 'string
   :group 'org-jekyll)
 
+(defvar org-jekyll/org-mode-static-extensions
+  '("css" "js" "png" "jpg" "gif" "pdf" "mp3" "swf" "zip" "gz" "txt" "el")
+  "Define the file's extension which need to handle as static files")
+
 (defvar org-jekyll/yaml-front-matter-keywords 
   '(layout "string"
 	   title "string"
@@ -71,6 +69,10 @@ then set this variable to /jekyll
 if the value type is list, then it's value will be use org-jekyll/yaml-list-value-sperator
 to seprate each one")
 
+(defvar org-jekyll/project-alist-inited nil
+  "Let org-jekyll to lazy initial the project-alist
+Please don't change this var")
+
 (defun trim-string (string)
   "Remove white spaces in beginning and ending of STRING.
 White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
@@ -80,7 +82,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 						      string)))
 
 (defun concat-list (list &optional concat-char)
-  "join each element in list with concat-char if it offered"
+  "join each element in LIST with CONCAT-CHAR if it offered"
   (let ((cchar (if concat-char 
 		   concat-char
 		 "")))
@@ -152,7 +154,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
        ))))
 
 (defun org-jekyll/get-yaml-front-matter (infile)
-  "Getting the pre-defined attribute from org-mode files
+  "Getting the pre-defined attribute from INFILE
 each yaml front matter in org-mode should be started with #+YAML/
 eg:
 #+YAML/layout: page
@@ -185,7 +187,7 @@ eg:
 	    )))
       ) result))
 
-(defun org-jekyll/new-post ()
+(defun org-jekyll/new-post (&optional with-date-prefix)
   "Create an org-mode file in org-jekyll/org-mode-project-root.
 If you want to create the post in a new sub directory, you can 
 use / to seprate the subdirectory and file name. e.g: I want to
@@ -199,32 +201,32 @@ it will failed.
   (interactive)
   (unless org-jekyll/org-mode-project-root
     (error "You never define the org-jekyll/org-mode-project-root"))
-  (let ((paths (split-string (read-string "Post Title:")
-			     "/")))
-    (let ((pdirs (butlast paths))
-	  (file-name (format "%s-%s.org" 
-			     (format-time-string "%Y-%m-%d") 
-			     (car (last paths)))))
-      (let ((pdirpath (if (and 
-			   pdirs 
-			   (>= (length pdirs) 1))
-			  (concat-list pdirs "/")
-			nil)))
-	(let ((file-name-path (if pdirpath 
-				  (concat pdirpath "/" file-name)
-				file-name))
-	      (pdir-abs-path (if pdirpath
-				 (expand-file-name pdirpath 
-						   org-jekyll/org-mode-project-root)
-			       nil)))
-	  (when pdir-abs-path
-	    (unless (file-exists-p pdir-abs-path)
-	      (make-directory pdir-abs-path t)))
-	  (message "Create Post [%s]" file-name-path)
-	  (find-file (expand-file-name file-name-path
-				       org-jekyll/org-mode-project-root))
-	  (message "Post [%s] has been created" file-name-path)
-	  )))))
+  
+  (let* ((paths (split-string (read-string "Post Title:")))
+	 (pdirs (butlast paths))
+	 (file-name (if with-date-prefix
+			(format "%s-%s.org"
+				(format-time-string "%Y-%m-%d")
+				(car (last paths)))
+		      (format "%s.org" (car (last paths)))))
+	 (pdirpath (if (and pdirs (>= (length pdirs) 1))
+		       (concat-list pdirs "/")
+		     nil))
+	 (file-name-path (if pdirpath 
+			     (concat pdirpath "/" file-name)
+			   file-name))
+	 (pdir-abs-path (if pdirpath
+			    (expand-file-name pdirpath
+					      org-jekyll/org-mode-project-root)
+			  nil)))
+    (when pdir-abs-path
+      (unless (file-exists-p pdir-abs-path)
+	(make-directory pdir-abs-path t)))
+    (message "Create Post [%s]" file-name-path)
+    (find-file (expand-file-name file-name-path
+				 org-jekyll/org-mode-project-root))
+    (message "Post [%s] has been created" file-name-path)
+    ))
 
 ;(defun org-jekyll/handle-image-link-before-processing (back-end)
 ;  (case back-end
@@ -297,11 +299,36 @@ it will failed.
 
 (defun org-jekyll/publish-project ()
   (interactive)
+  (unless org-jekyll/project-alist-inited
+    (dolist (pub-proj (org-jekyll/create-publish-project-alist))
+      (add-to-list 'org-publish-project-alist pub-proj))
+    (setq org-jekyll/project-alist-inited t)
+    )
   (org-publish "org-jekyll"))
 
-(defun org-jekyll/publish-setting-up ()
-  (dolist (pub-proj (org-jekyll/create-publish-project-alist))
-    (add-to-list 'org-publish-project-alist pub-proj))
-)
+(define-minor-mode org-jekyll-mode
+  "Org-jekyll-mode is an minor mode for writing jekyll post with org-mode
 
-(provide 'org-jekyll-project)
+When enable this mode, it can supply some facilities util to create an
+jekyll post with org-mode and publish current post to jekyll _posts folder. 
+
+key bindings:
+
+[C-c C-n] Create an new jekyll post
+[C-c C-p] Publishing current post
+[C-c C-d] Create an jekyll post which file name begin withs a timestamp prefix: e.g:
+When you input hello-world, this will create new file which name likes 
+2013-09-07-hello-world.org
+"
+  nil
+  " OJ"
+  '(
+    ([C-c C-n] . org-jekyll/new-post)
+    ([C-c C-p] . org-jekyll/publish-project)
+    ([C-c C-d] . (lambda ()
+		   (interactive)
+		   (org-jekyll/new-post t)))
+    )
+  )
+
+(provide 'org-jekyll-mode)
