@@ -1,4 +1,3 @@
-
 * Org-jekyll-mode WIKI
 
 ** What's org-jekyll-mode ?
@@ -52,5 +51,15 @@ Any other variables you can get it's description like this:
 *[C-c C-d]* Create an post with timestamp prefix  
 
 *[C-c C-p]* Publish current files in org-mode-project to your posts
+
+** Jekyll yaml front matter support
+org-jekyll-mode support all jekyll blog yaml front matter. To ensure there is no conflicts with org-mode intrinsic keywords
+we add prefix to yaml front matter, for example:  
+
+If you want to setting the post layout in org-mode files, you can do it like this:
+#BEGIN_EXAMPLE
+#+YAML/LAYOUT: post
+#END_EXAMPLE
+As the previous example, all yaml font matter in org-mode files should be start with #+YAML/
 
 
