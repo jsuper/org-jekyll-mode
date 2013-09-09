@@ -304,6 +304,7 @@ it will failed.
       (kill-buffer))))
 
 
+;;;###autoload
 (defun org-jekyll/publish-project ()
   (interactive)
   (unless org-jekyll/project-alist-inited
@@ -314,29 +315,12 @@ it will failed.
   (org-publish "org-jekyll"))
 
 ;;;###autoload
-(define-minor-mode org-jekyll-mode
-  "Org-jekyll-mode is an minor mode for writing jekyll post with org-mode
-
-When enable this mode, it can supply some facilities util to create an
-jekyll post with org-mode and publish current post to jekyll _posts folder. 
-
-key bindings:
-
-C-c C-n Create an new jekyll post
-C-c C-p Publishing current post
-C-c C-d Create an jekyll post which file name begin withs a timestamp prefix: e.g:
-When you input hello-world, this will create new file which name likes 2013-09-07-hello-world.org"
-  nil
-  " OJ"
-  '(
-    ([C-c C-n] . org-jekyll/new-post)
-    ([C-c C-p] . org-jekyll/publish-project)
-    ([C-c C-d] . (lambda ()
-		   (interactive)
-		   (org-jekyll/new-post t)))
-    )
-  )
+(defun org-jekyll-auto-config ()
+  (interactive)
+  (global-set-key (kbd "C-c n") 'org-jekyll/new-post)
+  (global-set-key (kbd "C-c C-n") (lambda ()
+				    (interactive)
+				    (org-jekyll/new-post t)))
+  (global-set-key (kbd "C-c p") 'org-jekyll/publish-project))
 
 (provide 'org-jekyll-mode)
-
-(file-name-nondirectory (buffer-file-name))
