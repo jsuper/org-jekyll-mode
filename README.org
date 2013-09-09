@@ -25,15 +25,16 @@ section
 
 ** Variables in org-jekyll mode which should be setted
 All these variables can be setted by `M-x customize`
-#org-jekyll/org-mode-project-root#
+
+*org-jekyll/org-mode-project-root*
 This variable store your org-mode project path, each files create by org-
 jekyll-mode will store in this folder. And it's must be setted.
 
-#org-jekyll/jekyll-project-root#
+*org-jekyll/jekyll-project-root*
 
 This var descibes your jekyll blog root path. Must be setted.
 
-#org-jekyll/org-mode-static-files-folder-name#
+*org-jekyll/org-mode-static-files-folder-name*
 
 This variable is used to store your folder name which you used to store
 org-mode static files. Which means all your static files are in an folder
@@ -45,8 +46,8 @@ Any other variables you can get it's description like this:
 
 ** Key bindings in org-jekyll-mode
 
-`[C-c C-n]` Create an post with no timestamp prefix
-`[C-c C-d]` Create an post with timestamp prefix
-`[C-c C-p]` Publish current files in org-mode-project to your posts
+*[C-c C-n]* Create an post with no timestamp prefix \\
+*[C-c C-d]* Create an post with timestamp prefix \\
+*[C-c C-p]* Publish current files in org-mode-project to your posts
 
 
