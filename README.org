@@ -1,0 +1,52 @@
+
+* Org-jekyll-mode WIKI
+
+** What's org-jekyll-mode ?
+org-jekyll-mode is an emacs minor mode. With this minor mode enable, you can
+quickly create an jekyll blog post and publish current post to your jekyll
+project '_posts' folder.
+
+** How to use this mode ?
+To enable this mode, firstly clone it from github. 
+
+#+BEGIN_SRC sh
+git clone https://github.com/jsuper/org-jekyll-mode.git   
+#+END_SRC
+
+Then, add org-jekyll-mode to your load-path
+
+
+#+BEGIN_SRC lisp
+(add-to-list 'load-path "path-to org-jekyll-mode")   
+#+END_SRC
+
+Before you use it, you should settings some variables. Please see below 
+section
+
+** Variables in org-jekyll mode which should be setted
+All these variables can be setted by `M-x customize`
+#org-jekyll/org-mode-project-root#
+This variable store your org-mode project path, each files create by org-
+jekyll-mode will store in this folder. And it's must be setted.
+
+#org-jekyll/jekyll-project-root#
+
+This var descibes your jekyll blog root path. Must be setted.
+
+#org-jekyll/org-mode-static-files-folder-name#
+
+This variable is used to store your folder name which you used to store
+org-mode static files. Which means all your static files are in an folder
+, e.g: I like to put all my static files in "org-mode-project-root/assets"
+, so I will set this variable's value to "assets"
+
+Any other variables you can get it's description like this:
+`C-h v org-jekyll TAB`
+
+** Key bindings in org-jekyll-mode
+
+`[C-c C-n]` Create an post with no timestamp prefix
+`[C-c C-d]` Create an post with timestamp prefix
+`[C-c C-p]` Publish current files in org-mode-project to your posts
+
+
