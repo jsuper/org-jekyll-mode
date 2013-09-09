@@ -58,7 +58,7 @@ we add prefix to yaml front matter, for example:
 
 If you want to setting the post layout in org-mode files, you can do it like this:
 #BEGIN_SRC lisp
-#+YAML/LAYOUT: post
+\#+YAML/LAYOUT: post
 #END_SRC
 As the previous example, all yaml font matter in org-mode files should be start with #+YAML/
 
