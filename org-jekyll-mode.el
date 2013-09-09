@@ -187,6 +187,7 @@ eg:
 	    )))
       ) result))
 
+;;;###autoload
 (defun org-jekyll/new-post (&optional with-date-prefix)
   "Create an org-mode file in org-jekyll/org-mode-project-root.
 If you want to create the post in a new sub directory, you can 
@@ -202,7 +203,7 @@ it will failed.
   (unless org-jekyll/org-mode-project-root
     (error "You never define the org-jekyll/org-mode-project-root"))
   
-  (let* ((paths (split-string (read-string "Post Title:")))
+  (let* ((paths (split-string (read-string "Post Title:") "/"))
 	 (pdirs (butlast paths))
 	 (file-name (if with-date-prefix
 			(format "%s-%s.org"
@@ -260,15 +261,21 @@ it will failed.
 	     (insert (format "  - %s\n" var))
 	     )))))
 
+
 (defun org-jekyll/publish-org-to-html (plist filename pub-dir)
   "Org-jekyll publish function, will insert yaml front matter to export files,
    We using the keywords defined in org-mode files as tag for jekyll
   "
-  (let* ((output-file (org-html-publish-to-html plist filename pub-dir))
-	(file-info (org-export--get-inbuffer-options))
-	(yaml-plist (org-jekyll/get-yaml-front-matter filename))
-	(title (org-element-interpret-data (plist-get file-info :title))))
-    
+  
+  (let* ((output-file (org-html-publish-to-html plist 
+						filename
+						pub-dir))
+	 (file-name-normalize-p (string-match-p "^[0-9]\\{4\\}-[0-9]\\{1,2\\}-[0-9]\\{1,2\\}.*" 
+						(file-name-nondirectory filename)))
+	 (file-info (org-export--get-inbuffer-options))
+	 (yaml-plist (org-jekyll/get-yaml-front-matter filename))
+	 (title (org-element-interpret-data (plist-get file-info :title)))
+	 (date (org-element-interpret-data (plist-get file-info :date))))
     (with-current-buffer (find-file-noselect output-file)
       (goto-char (point-min))
       (let* ((notitle nil)
@@ -306,6 +313,7 @@ it will failed.
     )
   (org-publish "org-jekyll"))
 
+;;;###autoload
 (define-minor-mode org-jekyll-mode
   "Org-jekyll-mode is an minor mode for writing jekyll post with org-mode
 
@@ -314,12 +322,10 @@ jekyll post with org-mode and publish current post to jekyll _posts folder.
 
 key bindings:
 
-[C-c C-n] Create an new jekyll post
-[C-c C-p] Publishing current post
-[C-c C-d] Create an jekyll post which file name begin withs a timestamp prefix: e.g:
-When you input hello-world, this will create new file which name likes 
-2013-09-07-hello-world.org
-"
+C-c C-n Create an new jekyll post
+C-c C-p Publishing current post
+C-c C-d Create an jekyll post which file name begin withs a timestamp prefix: e.g:
+When you input hello-world, this will create new file which name likes 2013-09-07-hello-world.org"
   nil
   " OJ"
   '(
@@ -332,3 +338,5 @@ When you input hello-world, this will create new file which name likes
   )
 
 (provide 'org-jekyll-mode)
+
+(file-name-nondirectory (buffer-file-name))
