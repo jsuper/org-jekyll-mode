@@ -27,6 +27,7 @@ section
 All these variables can be setted by `M-x customize`
 
 *org-jekyll/org-mode-project-root*
+
 This variable store your org-mode project path, each files create by org-
 jekyll-mode will store in this folder. And it's must be setted.
 
@@ -46,8 +47,10 @@ Any other variables you can get it's description like this:
 
 ** Key bindings in org-jekyll-mode
 
-*[C-c C-n]* Create an post with no timestamp prefix \\
-*[C-c C-d]* Create an post with timestamp prefix \\
+*[C-c C-n]* Create an post with no timestamp prefix  
+
+*[C-c C-d]* Create an post with timestamp prefix  
+
 *[C-c C-p]* Publish current files in org-mode-project to your posts
 
 
