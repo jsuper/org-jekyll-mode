@@ -261,6 +261,13 @@ it will failed.
 	     (insert (format "  - %s\n" var))
 	     )))))
 
+(defun normalize-org-mode-date-options (org-date-raw)
+  "The date option which inserted by org-mode has more format,
+will return yyyy-mm-dd format if exists"
+  (and (string-match "\\([0-9]\\{4\\}[-\\|/][0-9]\\{1,2\\}[-\\|/][0-9]\\{1,2\\}\\)" org-date-raw)
+       (replace-regexp-in-string "/" "-" (match-string 1 org-date-raw)))
+)
+
 
 (defun org-jekyll/publish-org-to-html (plist filename pub-dir)
   "Org-jekyll publish function, will insert yaml front matter to export files,
@@ -270,12 +277,16 @@ it will failed.
   (let* ((output-file (org-html-publish-to-html plist 
 						filename
 						pub-dir))
+	 (output-file-name (file-name-nondirectory output-file))
+	 (output-file-parent-path (file-name-directory output-file))
 	 (file-name-normalize-p (string-match-p "^[0-9]\\{4\\}-[0-9]\\{1,2\\}-[0-9]\\{1,2\\}.*" 
-						(file-name-nondirectory filename)))
+						output-file-name))
 	 (file-info (org-export--get-inbuffer-options))
 	 (yaml-plist (org-jekyll/get-yaml-front-matter filename))
 	 (title (org-element-interpret-data (plist-get file-info :title)))
-	 (date (org-element-interpret-data (plist-get file-info :date))))
+	 (date (org-element-interpret-data (plist-get file-info :date)))
+	 (date-str (or (normalize-org-mode-date-options date)
+		       (format-time-string "%Y-%m-%d"))))
     (with-current-buffer (find-file-noselect output-file)
       (goto-char (point-min))
       (let* ((notitle nil)
@@ -301,7 +312,15 @@ it will failed.
 	(goto-char (point-min))
 	(insert "---\n"))
       (save-buffer)
-      (kill-buffer))))
+      (kill-buffer))
+    (unless file-name-normalize-p
+      (when date-str
+	(let* ((new-name (concat date-str "-" output-file-name))
+	       (new-path (expand-file-name new-name
+					   output-file-parent-path)))
+	  (if (file-exists-p new-path)
+	      (delete-file new-path))
+	  (rename-file output-file new-path))))))
 
 
 ;;;###autoload
@@ -315,12 +334,16 @@ it will failed.
   (org-publish "org-jekyll"))
 
 ;;;###autoload
-(defun org-jekyll-auto-config ()
-  (interactive)
-  (global-set-key (kbd "C-c n") 'org-jekyll/new-post)
-  (global-set-key (kbd "C-c C-n") (lambda ()
-				    (interactive)
-				    (org-jekyll/new-post t)))
-  (global-set-key (kbd "C-c p") 'org-jekyll/publish-project))
+(define-minor-mode org-jekyll-mode
+  "An emacs minor mode for creating and publishing org-mode files to jekyll standard post"
+  nil
+  " OJM"
+  :keymap '(
+	    ([C-c C-n] . org-jekyll/new-post)
+	    ([C-c C-d] . (lambda ()
+			   (interactive)
+			   (org-jekyll/new-post t)))
+	    ([C-c C-p] . org-jekyll/publish-project))
+  )
 
 (provide 'org-jekyll-mode)
