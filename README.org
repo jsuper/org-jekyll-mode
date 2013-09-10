@@ -1,29 +1,31 @@
 * Org-jekyll-mode WIKI
 
-** What's org-jekyll-mode ?
-org-jekyll-mode is an emacs minor mode. With this minor mode enable, you can
-quickly create an jekyll blog post and publish current post to your jekyll
-project '_posts' folder.
+** Introduction
+org-jekyll-mode is an emacs plugins which can create org-mode file which name like jekyll posts format and publish 
+org-mode files to standard jekyll. org-jekyll-mode also support user to control their post yaml front matter values in
+org-mode files. 
 
-** How to use this mode ?
-To enable this mode, firstly clone it from github. 
+** Installation
+To install this plugins, just clone the source code from github. 
 
 #+BEGIN_SRC sh
 git clone https://github.com/jsuper/org-jekyll-mode.git   
 #+END_SRC
 
-Then, add org-jekyll-mode to your load-path
+Then, add org-jekyll-mode to your load-path and enable it.
 
 
 #+BEGIN_SRC lisp
 (add-to-list 'load-path "path-to org-jekyll-mode")   
+(require 'org-jekyll-mode)
+(org-jekyll-mode)
 #+END_SRC
 
 Before you use it, you should settings some variables. Please see below 
 section
 
 ** Variables in org-jekyll mode which should be setted
-All these variables can be setted by `M-x customize`
+All these variables can be setted by *M-x customize*
 
 *org-jekyll/org-mode-project-root*
 
@@ -53,8 +55,8 @@ Any other variables you can get it's description like this:
 *[C-c C-p]* Publish current files in org-mode-project to your posts
 
 ** Jekyll yaml front matter support
-org-jekyll-mode support all jekyll blog yaml front matter. To ensure there is no conflicts with org-mode intrinsic keywords
-we add prefix to yaml front matter, for example:  
+org-jekyll-mode support all jekyll blog yaml front matter. To ensure there is no conflicts with org-mode intrinsic 
+keywords we add prefix to yaml front matter, for example:  
 
 If you want to setting the post layout in org-mode files, you can do it like this:
 #+BEGIN_SRC sh
