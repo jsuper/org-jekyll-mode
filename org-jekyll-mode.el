@@ -327,6 +327,8 @@ will return yyyy-mm-dd format if exists"
 (defun org-jekyll/publish-project ()
   (interactive)
   (unless org-jekyll/project-alist-inited
+    (when (not (boundp 'org-publish-project-alist))
+      (require 'ox-publish))
     (dolist (pub-proj (org-jekyll/create-publish-project-alist))
       (add-to-list 'org-publish-project-alist pub-proj))
     (setq org-jekyll/project-alist-inited t)
