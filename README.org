@@ -1,7 +1,7 @@
 * Org-jekyll-mode WIKI
 
 ** Introduction
-org-jekyll-mode is an emacs plugins which can create org-mode file which name like jekyll posts format and publish 
+org-jekyll-mode is an emacs plugins which can easily create org-mode file which name like jekyll posts format and publish 
 org-mode files to standard jekyll. org-jekyll-mode also support user to control their post yaml front matter values in
 org-mode files. 
 
