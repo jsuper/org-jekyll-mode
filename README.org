@@ -1,9 +1,10 @@
 * Org-jekyll-mode WIKI
 
 ** Introduction
-org-jekyll-mode is an emacs plugins which can easily create org-mode file which name like jekyll posts format and publish 
-org-mode files to standard jekyll posts. org-jekyll-mode also support user to control their post yaml front matter values in
-org-mode files. 
+org-jekyll-mode is an emacs plugins which can easily create org-mode
+file which name like jekyll posts format and publish org-mode files to
+standard jekyll  posts. org-jekyll-mode also support user to control
+their post's yaml front matter values in org-mode files. 
 
 ** Installation
 To install this plugins, just clone the source code from github. 
@@ -55,13 +56,15 @@ Any other variables you can get it's description like this:
 *[C-c C-p]* Publish current files in org-mode-project to your posts
 
 ** Jekyll yaml front matter support
-org-jekyll-mode support all jekyll blog yaml front matter. To ensure there is no conflicts with org-mode intrinsic 
-keywords we add prefix to yaml front matter, for example:  
+org-jekyll-mode support all jekyll blog yaml front matter. To ensure
+there is no conflicts with org-mode intrinsic keywords we add prefix
+to yaml front  matter, for example:  
 
 If you want to setting the post layout in org-mode files, you can do it like this:
 #+BEGIN_SRC sh
 #+YAML/LAYOUT: post
 #+END_SRC
-As the previous example, all yaml font matter in org-mode files should be start with #+YAML/
+As the previous example, all yaml font matter in org-mode files should
+be start with *#+YAML/*
 
 
