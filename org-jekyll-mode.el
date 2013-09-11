@@ -96,62 +96,48 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
 
 (defun org-jekyll/create-publish-project-alist ()
   "Create the project alist for exporting org-mode file to jekyll post"
-  (let ((org-mode-project-root 
-	 (if org-jekyll/org-mode-project-root
-	     org-jekyll/org-mode-project-root
-	   (error "Project base directory should not be empty")))
-	(jekyll-project-root 
-	 (if org-jekyll/jekyll-project-root
-	     org-jekyll/jekyll-project-root
-	   (error "Project publishing directory should not be empty"))))
-    (setq org-jekyll-base (append 
-			   '("org-jekyll-base"			    
-			     :body-only t
-			     :base-extension "org"
-			     :html-extension "html"
-			     :html-link-use-abs-url t
-			     :recursive t
-			     :publishing-function org-jekyll/publish-org-to-html
-			     :auto-sitemap nil
-			     :auto-preamble nil
-			     :auto-postamble nil)
-			   (list 
-			    :base-directory (expand-file-name 
-					     org-mode-project-root)
-			    :html-link-home org-jekyll/html-link-home
-			    :publishing-directory (expand-file-name 
-						   "_posts" 
-						   jekyll-project-root)
-			    :with-toc org-jekyll/export-with-toc)))
-    (setq org-jekyll-static (append 
-			     '("org-jekyll-static"
-			       :recursive t
-			       :publishing-function org-publish-attachment
-			       )
-			     (list 
-			      :publishing-directory (expand-file-name 
-						     "assets" 
-						     jekyll-project-root)
-			      :base-directory (expand-file-name 
-					       org-jekyll/org-mode-static-files-folder-name
-					       org-mode-project-root)
-			      :base-extension (let ((result nil))
-						(dolist 
-						    (var org-jekyll/org-mode-static-extensions)
-						  (if result
-						      (setq result (concat result 
-									   "\\|" 
-									   (format "%s" var)))
-						    (setq result (format "%s" var))
-						    ))
-						result))))
-    (list  
-     org-jekyll-base
-     org-jekyll-static
-     '("org-jekyll"
+  (unless org-jekyll/jekyll-project-root
+    (error "Project base directory should not be empty"))
+  (unless org-jekyll/org-mode-project-root
+    (error "Project publishing directory should not be empty"))
+  `(("org-jekyll-base"
+     :body-only t
+     :base-extension "org"
+     :html-extension "html"
+     :html-link-use-abs-url t
+     :recursive t
+     :publishing-function org-jekyll/publish-org-to-html
+     :auto-sitemap nil
+     :auto-preamble nil
+     :auto-postamble nil
+     :base-directory ,(expand-file-name org-jekyll/org-mode-project-root)
+     :html-link-home ,org-jekyll/html-link-home
+     :publishing-directory ,(expand-file-name "_posts"
+					      org-jekyll/jekyll-project-root)
+     :with-toc ,org-jekyll/export-with-toc)
+    ("org-jekyll-static"
+     :recursive t
+     :publishing-function org-publish-attachment
+     :publishing-directory ,(expand-file-name 
+			    "assets" 
+			    org-jekyll/jekyll-project-root)
+     :base-directory ,(expand-file-name 
+		       org-jekyll/org-mode-static-files-folder-name
+		       org-jekyll/org-mode-project-root)
+     :base-extension ,(let ((result nil))
+		       (dolist 
+			   (var org-jekyll/org-mode-static-extensions)
+			 (if result
+			     (setq result (concat result 
+						  "\\|" 
+						  (format "%s" var)))
+			   (setq result (format "%s" var))
+			   ))
+		       result))
+    ("org-jekyll"
        :components ("org-jekyll-base" "org-jekyll-static")
        :author "org-jekyll"
-       ))))
+       )))
 
 (defun org-jekyll/get-yaml-front-matter (infile)
   "Getting the pre-defined attribute from INFILE
@@ -203,7 +189,9 @@ it will failed.
   (unless org-jekyll/org-mode-project-root
     (error "You never define the org-jekyll/org-mode-project-root"))
   
-  (let* ((paths (split-string (read-string "Post Title:") "/"))
+  (let* ((paths (split-string (read-string (if with-date-prefix
+					       "Post Title(Begin with yyyy-mm-dd):"
+					     "Post Title:")) "/"))
 	 (pdirs (butlast paths))
 	 (file-name (if with-date-prefix
 			(format "%s-%s.org"
@@ -264,7 +252,8 @@ it will failed.
 (defun normalize-org-mode-date-options (org-date-raw)
   "The date option which inserted by org-mode has more format,
 will return yyyy-mm-dd format if exists"
-  (and (string-match "\\([0-9]\\{4\\}[-\\|/][0-9]\\{1,2\\}[-\\|/][0-9]\\{1,2\\}\\)" org-date-raw)
+  (and (string-match "\\([0-9]\\{4\\}[-\\|/][0-9]\\{1,2\\}[-\\|/][0-9]\\{1,2\\}\\)" 
+		     org-date-raw)
        (replace-regexp-in-string "/" "-" (match-string 1 org-date-raw)))
 )
 
@@ -307,7 +296,9 @@ will return yyyy-mm-dd format if exists"
 	  (org-jekyll/insert-yaml-front-matter-string "title" title))
 	(unless nolayout 
 	  (goto-char (point-min))
-	  (org-jekyll/insert-yaml-front-matter-string "layout" (or org-jekyll/default-post-layout "post")))
+	  (org-jekyll/insert-yaml-front-matter-string
+	   "layout" 
+	   (or org-jekyll/default-post-layout "post")))
 	
 	(goto-char (point-min))
 	(insert "---\n"))
@@ -339,13 +330,13 @@ will return yyyy-mm-dd format if exists"
 (define-minor-mode org-jekyll-mode
   "An emacs minor mode for creating and publishing org-mode files to jekyll standard post"
   nil
-  " OJM"
-  :keymap '(
-	    ([C-c C-n] . org-jekyll/new-post)
-	    ([C-c C-d] . (lambda ()
-			   (interactive)
-			   (org-jekyll/new-post t)))
-	    ([C-c C-p] . org-jekyll/publish-project))
+  ""
+  `(
+    (,(kbd "C-c C-n") . org-jekyll/new-post)
+    (,(kbd "C-c C-d") . (lambda ()
+			  (interactive)
+			  (org-jekyll/new-post t)))
+    (,(kbd "C-c C-p") . org-jekyll/publish-project))
   )
 
 (provide 'org-jekyll-mode)
