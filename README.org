@@ -30,12 +30,12 @@ section
 ** Variables in org-jekyll mode which should be setted
 All these variables can be setted by *M-x customize*
 
-*org-jekyll/org-mode-project-root*  
+*org-jekyll/org-mode-project-root* [MUST BE SETTED]  
 
 This variable store your org-mode project path, each files create by org-
-jekyll-mode will store in this folder. And it's must be setted.
+jekyll-mode will store in this folder. It's must be setted.
 
-*org-jekyll/jekyll-project-root*  
+*org-jekyll/jekyll-project-root* [MUST BE SETTED]
 
 This var descibes your jekyll blog root path. Must be setted.
 
