@@ -1,6 +1,6 @@
 * Org-jekyll-mode WIKI
 ** [TODO LIST]
-*** TODO Add keyword which can let org-jekyll never publish this file
++ Add keyword which can mark file to be ignored
 
 ** Introduction
 org-jekyll-mode is an emacs plugins which can easily create org-mode
