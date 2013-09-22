@@ -27,7 +27,7 @@ Then, add org-jekyll-mode to your load-path and enable it.
 Before you use it, you should settings some variables. Please see below 
 section
 
-** Variables in org-jekyll mode which should be setted
+** Variables in org-jekyll-mode
 All these variables can be setted by *M-x customize*
 
 *org-jekyll/org-mode-project-root* [MUST BE SETTED]  
