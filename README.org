@@ -1,4 +1,6 @@
 * Org-jekyll-mode WIKI
+** [TODO LIST]
+*** TODO Add keyword which can let org-jekyll never publish this file
 
 ** Introduction
 org-jekyll-mode is an emacs plugins which can easily create org-mode
@@ -29,20 +31,42 @@ section
 All these variables can be setted by *M-x customize*
 
 *org-jekyll/org-mode-project-root*
-
 This variable store your org-mode project path, each files create by org-
 jekyll-mode will store in this folder. And it's must be setted.
 
 *org-jekyll/jekyll-project-root*
-
 This var descibes your jekyll blog root path. Must be setted.
 
 *org-jekyll/org-mode-static-files-folder-name*
-
 This variable is used to store your folder name which you used to store
 org-mode static files. Which means all your static files are in an folder
 , e.g: I like to put all my static files in "org-mode-project-root/assets"
 , so I will set this variable's value to "assets"
+
+*org-jekyll/export-with-toc*
+This variable is used to tell org-jekyll whether should export table of 
+content for current file, default value is nil
+
+*org-jekyll/headlines-level*
+Define the headline level for export toc, defualt value is 2.
+
+*org-jekyll/default-post-layout*
+Define the default layout of export posts, default value is "post"
+
+*org-jekyll/html-link-home*
+Define your site home, default is "/", if you have a custom site home like
+"/blog", so you can set this variable.
+
+*org-jekyll/yaml-list-value-sperator*
+Define the value seprator of yaml front matter in org-mode files, default
+is ";"
+
+*org-jekyll/org-mode-static-extensions*
+Define the static file extensions, if you want to add new extension in it,
+please use *add-to-list* or *append*
+
+*org-jekyll/yaml-front-matter-keywords*
+Define the jekyll yaml-front-matter, please never change its value.
 
 Any other variables you can get it's description like this:
 `C-h v org-jekyll TAB`
