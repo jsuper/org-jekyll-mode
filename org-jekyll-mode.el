@@ -1,4 +1,18 @@
-; Org-jekyll project configure directory
+;; org-jekyll-mode -- is a minor mode, which help to export org-mode file
+;; as an jekyll-formatted html.
+;;
+;;
+;; Copyright (C) 2012-2014 Tang Ling
+;;
+;; Author: Tang Ling (http://jsuper.github.io)
+;; URL: http://github.com/jsuper/org-jekyll-mode
+;; GIT: http://github.com/jsuper/org-jekyll-mode
+;;
+;; This file is NOT part of GNU Emacs.
+;;
+;; Install
+;;     Please see the README.md file from the same distribution
+
 
 (defgroup org-jekyll nil
   "Org-mode for jekyll project")
@@ -13,8 +27,7 @@ you must specify it before you invoke org-jekyll/publish-setting-up"
   "Define the publishing directory for org-mode project,
  you must specify it before you invoke org-jekyll/publish-setting-up"
   :type 'string
-  :group 'org-jekyll
-  )
+  :group 'org-jekyll)
 
 (defcustom org-jekyll/export-with-toc nil
   "Define whether export the Table of Contents or not
@@ -45,8 +58,7 @@ e.g: If your jekyll project root is $HOST/jekyll,
 then set this variable to /jekyll
 "
   :type 'string
-  :group 'org-jekyll
-  )
+  :group 'org-jekyll)
 
 (defcustom org-jekyll/yaml-list-value-sperator ";"
   "Yaml values seprator"
@@ -67,7 +79,8 @@ then set this variable to /jekyll
 	   tags "list")
   "Define the jekyll yaml front matter and its value type, 
 if the value type is list, then it's value will be use org-jekyll/yaml-list-value-sperator
-to seprate each one")
+to seprate each one. To add new yaml keyword, do like this:
+(add-to-list 'org-jekyll/yaml-front-matter-keywords '(newk \"valutype\") ")
 
 (defvar org-jekyll/project-alist-inited nil
   "Let org-jekyll to lazy initial the project-alist
@@ -91,8 +104,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
       (if result
 	  (setq result (concat result concat-char ele))
 	(setq result ele)))
-    result)
-  )
+    result))
 
 (defun org-jekyll/create-publish-project-alist ()
   "Create the project alist for exporting org-mode file to jekyll post"
@@ -160,18 +172,19 @@ eg:
 	       (definedp (plist-get 
 			  org-jekyll/yaml-front-matter-keywords 
 			  (intern (downcase yaml-name)))))
-	  (when (and yaml-name yaml-value definedp)
-	    (add-to-list 'result 
+	  (when (and yaml-name yaml-value)
+	    (if definedp
+            (add-to-list 'result 
 			 (list (downcase yaml-name)
 			       (cond ((string= definedp "string")
 				      (trim-string yaml-value))
 				     ((string= definedp "list")
 				      (split-string (trim-string yaml-value) 
-						    org-jekyll/yaml-list-value-sperator)
-				      ))
-			       ))
-	    )))
-      ) result))
+						    org-jekyll/yaml-list-value-sperator)))))
+          ;;if not defined in `org-jekyll/yaml-front-matter-list`, then treat it as string type
+          (add-to-list 'result (list (downcase yaml-name)
+                                     yaml-value))))))) 
+    result))
 
 ;;;###autoload
 (defun org-jekyll/new-post (&optional with-date-prefix)
@@ -214,8 +227,7 @@ it will failed.
     (message "Create Post [%s]" file-name-path)
     (find-file (expand-file-name file-name-path
 				 org-jekyll/org-mode-project-root))
-    (message "Post [%s] has been created" file-name-path)
-    ))
+    (message "Post [%s] has been created" file-name-path)))
 
 ;(defun org-jekyll/handle-image-link-before-processing (back-end)
 ;  (case back-end
@@ -246,23 +258,20 @@ it will failed.
 	  ((listp value)
 	   (insert (format "%s:\n" section))
 	   (dolist (var value)
-	     (insert (format "  - %s\n" var))
-	     )))))
+	     (insert (format "  - %s\n" var)))))))
 
 (defun normalize-org-mode-date-options (org-date-raw)
   "The date option which inserted by org-mode has more format,
 will return yyyy-mm-dd format if exists"
   (and (string-match "\\([0-9]\\{4\\}[-\\|/][0-9]\\{1,2\\}[-\\|/][0-9]\\{1,2\\}\\)" 
 		     org-date-raw)
-       (replace-regexp-in-string "/" "-" (match-string 1 org-date-raw)))
-)
+       (replace-regexp-in-string "/" "-" (match-string 1 org-date-raw))))
 
 
 (defun org-jekyll/publish-org-to-html (plist filename pub-dir)
   "Org-jekyll publish function, will insert yaml front matter to export files,
    We using the keywords defined in org-mode files as tag for jekyll
   "
-  
   (let* ((output-file (org-html-publish-to-html plist 
 						filename
 						pub-dir))
@@ -287,9 +296,7 @@ will return yyyy-mm-dd format if exists"
 	      (setq notitle t))
 	    (when (string= yaml-name "layout")
 	      (setq nolayout t))
-	    (org-jekyll/insert-yaml-front-matter-string yaml-name yaml-value)
-	    )
-	  )
+	    (org-jekyll/insert-yaml-front-matter-string yaml-name yaml-value)))
 	(insert "---\n")
 	(unless notitle 
 	  (goto-char (point-min))
@@ -313,7 +320,6 @@ will return yyyy-mm-dd format if exists"
 	      (delete-file new-path))
 	  (rename-file output-file new-path))))))
 
-
 ;;;###autoload
 (defun org-jekyll/publish-project ()
   (interactive)
@@ -322,8 +328,7 @@ will return yyyy-mm-dd format if exists"
       (require 'ox-publish))
     (dolist (pub-proj (org-jekyll/create-publish-project-alist))
       (add-to-list 'org-publish-project-alist pub-proj))
-    (setq org-jekyll/project-alist-inited t)
-    )
+    (setq org-jekyll/project-alist-inited t))
   (org-publish "org-jekyll"))
 
 ;;;###autoload
@@ -336,7 +341,8 @@ will return yyyy-mm-dd format if exists"
     (,(kbd "C-c C-d") . (lambda ()
 			  (interactive)
 			  (org-jekyll/new-post t)))
-    (,(kbd "C-c C-p") . org-jekyll/publish-project))
-  )
+    (,(kbd "C-c C-p") . org-jekyll/publish-project)))
 
 (provide 'org-jekyll-mode)
+;;---------------------------------------
+;; org-jekyll-mode end here
