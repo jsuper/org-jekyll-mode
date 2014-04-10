@@ -1,6 +1,6 @@
 * Org-jekyll-mode WIKI
-** [TODO LIST]
-+ Add keyword which can mark file to be ignored
+
+[[http://jsuper.github.io/blog/using-org-mode-to-write-jekyll-post.html][中文介绍]]
 
 ** Introduction
 org-jekyll-mode is an emacs plugins which can easily create org-mode
