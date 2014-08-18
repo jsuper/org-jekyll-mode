@@ -41,9 +41,15 @@ nil or t"
   :group 'org-jekyll
   :type 'integer)
 
-(defcustom  org-jekyll/org-mode-static-files-folder-name "."
+(defcustom  org-jekyll/org-mode-static-files-folder-name nil
   "Define the folder name in org-mode-project root which used to 
 store static files for org-mode"
+  :type 'string
+  :group 'org-jekyll)
+
+(defcustom org-jekyll/jekyll-static-folder-name nil
+  "The target folder to store static files, i.e. image, css, attachment
+in jekyll project"
   :type 'string
   :group 'org-jekyll)
 
@@ -122,6 +128,7 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
      :auto-sitemap nil
      :auto-preamble nil
      :auto-postamble nil
+     :headline-levels ,org-jekyll/headlines-level
      :base-directory ,(expand-file-name org-jekyll/org-mode-project-root)
      :html-link-home ,org-jekyll/html-link-home
      :publishing-directory ,(expand-file-name "_posts"
@@ -130,9 +137,8 @@ White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
     ("org-jekyll-static"
      :recursive t
      :publishing-function org-publish-attachment
-     :publishing-directory ,(expand-file-name 
-			    "assets" 
-			    org-jekyll/jekyll-project-root)
+     :publishing-directory ,(expand-file-name org-jekyll/jekyll-static-folder-name
+                                              org-jekyll/jekyll-project-root)
      :base-directory ,(expand-file-name 
 		       org-jekyll/org-mode-static-files-folder-name
 		       org-jekyll/org-mode-project-root)
@@ -284,7 +290,9 @@ will return yyyy-mm-dd format if exists"
 	 (title (org-element-interpret-data (plist-get file-info :title)))
 	 (date (org-element-interpret-data (plist-get file-info :date)))
 	 (date-str (or (normalize-org-mode-date-options date)
-		       (format-time-string "%Y-%m-%d"))))
+		       (format-time-string "%Y-%m-%d")))
+         (rootp (or (car (last (split-string org-jekyll/jekyll-project-root "[\\/]")))
+                    "")))
     (with-current-buffer (find-file-noselect output-file)
       (goto-char (point-min))
       (let* ((notitle nil)
@@ -306,9 +314,12 @@ will return yyyy-mm-dd format if exists"
 	  (org-jekyll/insert-yaml-front-matter-string
 	   "layout" 
 	   (or org-jekyll/default-post-layout "post")))
-	
 	(goto-char (point-min))
 	(insert "---\n"))
+      (goto-char (point-min))
+      (while (search-forward-regexp "\\(<img.*src=\"\\)\\(.*?\\)\\(\".*?>\\)" nil t)
+        (let* ((srcp (match-string-no-properties 2)))
+          (replace-match (concat "\\1/" rootp (file-truename srcp) "\\3"))))
       (save-buffer)
       (kill-buffer))
     (unless file-name-normalize-p
