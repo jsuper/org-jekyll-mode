@@ -1,6 +1,6 @@
 * Org-jekyll-mode WIKI
 
-[[http://jsuper.github.io/blog/using-org-mode-to-write-jekyll-post.html][中文介绍]]
+[[https://jsuper.github.io/emacs/using-org-mode-to-write-jekyll-post.html][中文介绍]]
 
 ** Introduction
 org-jekyll-mode is an emacs plugins which can easily create org-mode
